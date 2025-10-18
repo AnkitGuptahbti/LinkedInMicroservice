@@ -130,6 +130,9 @@ app.all('/feed/*path', (req, res) => proxyRequest(req, res, 'feed', req.path.rep
 app.use('/notifications', authenticateToken);
 app.all('/notifications/*path', (req, res) => proxyRequest(req, res, 'notification', req.path.replace('/notifications', '')));
 
+app.use('/chat', authenticateToken);
+app.all('/chat/*path', (req, res) => proxyRequest(req, res, 'chat', req.path.replace('/chat', '')));
+
 app.use('/jobs', authenticateToken);
 app.all('/jobs/*path', (req, res) => proxyRequest(req, res, 'job', req.path.replace('/jobs', '')));
 

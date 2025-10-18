@@ -92,6 +92,19 @@ services:
     networks:
       - linkedin-net    
 
+  chat-service:
+    build: ./chat-service
+    container_name: chat-service
+    ports:
+      - "3006:3006"
+    env_file:
+      - ./chat-service/.env
+    depends_on:
+      - kafka
+      - redis
+    networks:
+      - linkedin-net    
+
   api-gateway:
     build: ./api-gateway
     container_name: api-gateway
