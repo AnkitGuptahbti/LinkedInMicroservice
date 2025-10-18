@@ -134,6 +134,7 @@ app.use('/chat', authenticateToken);
 app.all('/chat/*path', (req, res) => proxyRequest(req, res, 'chat', req.path.replace('/chat', '')));
 
 app.use('/jobs', authenticateToken);
+app.all('/jobs', (req, res) => proxyRequest(req, res, 'job', '/'));
 app.all('/jobs/*path', (req, res) => proxyRequest(req, res, 'job', req.path.replace('/jobs', '')));
 
 app.use('/search', authenticateToken);

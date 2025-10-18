@@ -104,6 +104,17 @@ services:
       - redis
     networks:
       - linkedin-net    
+  job-service:
+    build: ./job-service
+    container_name: job-service
+    ports:
+      - "3007:3007"
+    env_file:
+      - ./job-service/.env
+    depends_on:
+      - kafka
+    networks:
+      - linkedin-net
 
   api-gateway:
     build: ./api-gateway
