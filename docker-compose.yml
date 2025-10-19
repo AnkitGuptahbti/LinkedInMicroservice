@@ -141,6 +141,18 @@ services:
     networks:
       - linkedin-net
 
+  analytics-service:
+    build: ./analytics-service
+    container_name: analytics-service
+    ports:
+      - "3009:3009"
+    env_file:
+      - ./analytics-service/.env
+    depends_on:
+      - kafka
+    networks:
+      - linkedin-net
+
   api-gateway:
     build: ./api-gateway
     container_name: api-gateway

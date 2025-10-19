@@ -162,6 +162,8 @@ app.all('/search', (req, res) => {
   proxyRequest(req, res, 'search', path);
 });
 
+app.use('/analytics', authenticateToken);
+app.all('/analytics/*path', (req, res) => proxyRequest(req, res, 'analytics', req.path.replace('/analytics', '')));
 
 
 // Health check
