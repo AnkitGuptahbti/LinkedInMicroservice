@@ -91,7 +91,9 @@ Object.keys(services).forEach(service => {
 // Proxy function
 const proxyRequest = async (req, res, serviceName, path) => {
   try {
-    const url = `${services[serviceName]}${path}`;
+    // const url = `${services[serviceName]}${path}`;
+    const queryString = new URLSearchParams(req.query).toString();
+    const url = `${services[serviceName]}${path}${queryString ? '?' + queryString : ''}`;
     const headers = { ...req.headers };
 
     logger.info(`Routing ${req.method} ${url}`);
@@ -137,8 +139,30 @@ app.use('/jobs', authenticateToken);
 app.all('/jobs', (req, res) => proxyRequest(req, res, 'job', '/'));
 app.all('/jobs/*path', (req, res) => proxyRequest(req, res, 'job', req.path.replace('/jobs', '')));
 
+app.all('/search', (req, res) => proxyRequest(req, res, 'search', '/search'));
+app.all('/search/*path', (req, res) => 
+  proxyRequest(req, res, 'search', req.path.replace('/search', ''))
+);
+
 app.use('/search', authenticateToken);
-app.all('/search/*path', (req, res) => proxyRequest(req, res, 'search', req.path.replace('/search', '')));
+
+app.all('/search', (req, res) => {
+  const { type, ...query } = req.query; // extracting type
+  let path = '/search';
+
+  if (type) {
+    path += `/${type}`; // /search/posts or /search/jobs or /search/users
+  }
+
+  const queryString = new URLSearchParams(query).toString();
+  if (queryString) {
+    path += `?${queryString}`;
+  }
+
+  proxyRequest(req, res, 'search', path);
+});
+
+
 
 // Health check
 app.get('/health', (req, res) => {

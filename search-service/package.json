@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@elastic/elasticsearch": "^9.1.1",
+    "@elastic/elasticsearch": "^8.15.1",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "kafkajs": "^2.2.4",
