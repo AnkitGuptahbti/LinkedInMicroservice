@@ -5,9 +5,19 @@ const CircuitBreaker = require('opossum');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const winston = require('winston');
+const cors = require('cors');
 
 const app = express();
 app.use(express.json());
+app.use(cors(
+  {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+  }
+));
+app.use(express.urlencoded({ extended: true }));
 
 // Logger setup
 const logger = winston.createLogger({
@@ -62,14 +72,22 @@ const createCircuitBreaker = (serviceName) => {
     // Remove unsafe headers here inside the breaker
     const { host, connection, ...safeHeaders } = headers;
 
-    const response = await axios({
-      url,
-      method,
-      // headers: { ...safeHeaders, 'Content-Type': 'application/json' },
-      data: data
-    });
+    try{
+      const response = await axios({
+        url,
+        method,
+        // headers: { ...safeHeaders, 'Content-Type': 'application/json' },
+        data: data
+      });
 
-    return response.data;
+      return response.data;
+    } catch (error) {
+
+      return {
+        error: error.message,
+        status: error.response?.status || 500,
+      }
+    }
   }, options);
 };
 
@@ -91,7 +109,6 @@ Object.keys(services).forEach(service => {
 // Proxy function
 const proxyRequest = async (req, res, serviceName, path) => {
   try {
-    // const url = `${services[serviceName]}${path}`;
     const queryString = new URLSearchParams(req.query).toString();
     const url = `${services[serviceName]}${path}${queryString ? '?' + queryString : ''}`;
     const headers = { ...req.headers };
@@ -105,7 +122,7 @@ const proxyRequest = async (req, res, serviceName, path) => {
       headers
     );
 
-    res.json(result);
+    res.status(result.status || 200).json(result);
   } catch (error) {
     logger.error(`Error routing to ${serviceName}: ${error.message}`);
     res.status(error.response?.status || 500).json({

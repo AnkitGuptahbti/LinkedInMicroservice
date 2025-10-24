@@ -88,7 +88,7 @@ app.post('/login', async (req, res) => {
     );
 
     logger.info(`User logged in: ${email}`);
-    res.json({ token, userId: user._id });
+    res.status(200).json({ token, userId: user._id });
   } catch (error) {
     logger.error(`Login error: ${error.message}`);
     res.status(500).json({ error: error.message });
