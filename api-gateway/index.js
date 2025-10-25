@@ -57,7 +57,8 @@ const services = {
   job: process.env.JOB_SERVICE_URL || 'http://localhost:3007',
   search: process.env.SEARCH_SERVICE_URL || 'http://localhost:3008',
   analytics: process.env.ANALYTICS_SERVICE_URL || 'http://localhost:3009',
-  admin: process.env.ADMIN_SERVICE_URL || 'http://localhost:3010'
+  admin: process.env.ADMIN_SERVICE_URL || 'http://localhost:3010',
+  media: process.env.MEDIA_SERVICE_URL || 'http://localhost:3011'
 };
 
 // Circuit breaker function
@@ -155,6 +156,9 @@ app.all('/chat/*path', (req, res) => proxyRequest(req, res, 'chat', req.path.rep
 app.use('/jobs', authenticateToken);
 app.all('/jobs', (req, res) => proxyRequest(req, res, 'job', '/'));
 app.all('/jobs/*path', (req, res) => proxyRequest(req, res, 'job', req.path.replace('/jobs', '')));
+
+app.use('/media', authenticateToken);
+app.all('/media/*path', (req, res) => proxyRequest(req, res, 'media', req.path.replace('/media', '')));
 
 app.all('/search', (req, res) => proxyRequest(req, res, 'search', '/search'));
 app.all('/search/*path', (req, res) => 
