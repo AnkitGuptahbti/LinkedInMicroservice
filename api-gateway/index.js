@@ -133,6 +133,44 @@ const proxyRequest = async (req, res, serviceName, path) => {
   }
 };
 
+// Special proxy function for media uploads
+const proxyMediaRequest = async (req, res, serviceName, path) => {
+  try {
+    const queryString = new URLSearchParams(req.query).toString();
+    const url = `${services[serviceName]}${path}${queryString ? '?' + queryString : ''}`;
+    
+    logger.info(`Routing media upload ${req.method} ${url}`);
+
+    // For file uploads, we need to stream the request directly
+    const response = await axios({
+      url,
+      method: req.method,
+      data: req,
+      headers: {
+        ...req.headers,
+        'content-type': req.headers['content-type']
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+      responseType: 'stream'
+    });
+
+    // Forward the response headers
+    Object.keys(response.headers).forEach(key => {
+      res.setHeader(key, response.headers[key]);
+    });
+
+    // Stream the response back to the client
+    response.data.pipe(res);
+  } catch (error) {
+    logger.error(`Error routing media upload to ${serviceName}: ${error.message}`);
+    res.status(error.response?.status || 500).json({
+      error: error.message,
+      service: serviceName
+    });
+  }
+};
+
 // Routes
 app.post('/auth/register', (req, res) => proxyRequest(req, res, 'auth', '/register'));
 app.post('/auth/login', (req, res) => proxyRequest(req, res, 'auth', '/login'));
@@ -158,7 +196,8 @@ app.all('/jobs', (req, res) => proxyRequest(req, res, 'job', '/'));
 app.all('/jobs/*path', (req, res) => proxyRequest(req, res, 'job', req.path.replace('/jobs', '')));
 
 app.use('/media', authenticateToken);
-app.all('/media/*path', (req, res) => proxyRequest(req, res, 'media', req.path.replace('/media', '')));
+app.all('/media', (req, res) => proxyMediaRequest(req, res, 'media', '/'));
+app.all('/media/*path', (req, res) => proxyMediaRequest(req, res, 'media', req.path.replace('/media', '')));
 
 app.all('/search', (req, res) => proxyRequest(req, res, 'search', '/search'));
 app.all('/search/*path', (req, res) => 
