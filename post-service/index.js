@@ -56,8 +56,8 @@ const Post = mongoose.model('Post', postSchema);
 // Create Post
 app.post('/', async (req, res) => {
   try {
-    const { userId, content, imageUrl } = req.body;
-
+    const { content, imageUrl } = req.body;
+    const userId = req.headers['x-user-id'];
     const post = new Post({ userId, content, imageUrl, shares: 0 });
     await post.save();
 
