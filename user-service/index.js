@@ -2,10 +2,10 @@
 
 
 
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const winston = require('winston');
+import 'dotenv/config';
+import express from 'express';
+import winston from 'winston';
+import Profile from './models/Profiles.js';
 
 const app = express();
 app.use(express.json());
@@ -13,43 +13,6 @@ app.use(express.json());
 const logger = winston.createLogger({
   transports: [new winston.transports.Console()]
 });
-
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
-
-// Profile Schema
-const profileSchema = new mongoose.Schema({
-  userId: { type: String, required: true, unique: true },
-  firstName: String,
-  lastName: String,
-  headline: String,
-  location: String,
-  industry: String,
-  summary: String,
-  experience: [{
-    title: String,
-    company: String,
-    startDate: Date,
-    endDate: Date,
-    description: String
-  }],
-  education: [{
-    school: String,
-    degree: String,
-    field: String,
-    startDate: Date,
-    endDate: Date
-  }],
-  skills: [String],
-  followers: [String],
-  following: [String],
-  connections: [String],
-  createdAt: { type: Date, default: Date.now }
-});
-
-const Profile = mongoose.model('Profile', profileSchema);
 
 // Create/Update Profile
 app.post('/profile', async (req, res) => {
@@ -66,6 +29,24 @@ app.post('/profile', async (req, res) => {
     res.json(profile);
   } catch (error) {
     logger.error(`Profile update error: ${error.message}`);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/user_list', async (req, res) => {
+  try {
+    const users = await Profile.find()
+    const formattedUsers = users.map(user => ({
+      userId: user.userId,
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      headline: user.headline || '',
+      location: user.location || '',
+      industry: user.industry || '',
+      summary: user.summary || ''
+    }));
+    res.json(formattedUsers);
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
