@@ -6,7 +6,7 @@ const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const winston = require('winston');
 const cors = require('cors');
-
+import { ALLOWED_HEADERS } from './constants/constant.js';
 const app = express();
 app.use(express.json());
 app.use(cors(
@@ -70,14 +70,21 @@ const createCircuitBreaker = (serviceName) => {
   };
 
   return new CircuitBreaker(async (url, method, data, headers) => {
-    // Remove unsafe headers here inside the breaker
-    const { host, connection, ...safeHeaders } = headers;
+    // Filter out problematic headers and only forward safe ones
+    const safeHeaders = {};
+
+    // Only forward allowed headers
+    ALLOWED_HEADERS.forEach(header => {
+      if (headers[header]) {
+        safeHeaders[header] = headers[header];
+      }
+    });
 
     try{
       const response = await axios({
         url,
         method,
-        // headers: { ...safeHeaders, 'Content-Type': 'application/json' },
+        headers: safeHeaders,
         data: data
       });
 
@@ -112,8 +119,11 @@ const proxyRequest = async (req, res, serviceName, path) => {
   try {
     const queryString = new URLSearchParams(req.query).toString();
     const url = `${services[serviceName]}${path}${queryString ? '?' + queryString : ''}`;
-    const headers = { ...req.headers };
-
+    const headers = { ...req.headers};
+    if(req.user){
+      headers['x-user-id'] = req.user.userId || '';
+      headers['x-user-email'] = req.user.email || '';
+    }
     logger.info(`Routing ${req.method} ${url}`);
 
     const result = await breakers[serviceName].fire(
