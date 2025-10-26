@@ -1,11 +1,11 @@
-require('dotenv').config();
-const express = require('express');
-const axios = require('axios');
-const CircuitBreaker = require('opossum');
-const rateLimit = require('express-rate-limit');
-const jwt = require('jsonwebtoken');
-const winston = require('winston');
-const cors = require('cors');
+import 'dotenv/config';
+import express from 'express';
+import axios from 'axios';
+import CircuitBreaker from 'opossum';
+import rateLimit from 'express-rate-limit';
+import jwt from 'jsonwebtoken';
+import winston from 'winston';
+import cors from 'cors';
 import { ALLOWED_HEADERS } from './constants/constant.js';
 const app = express();
 app.use(express.json());
@@ -133,7 +133,7 @@ const proxyRequest = async (req, res, serviceName, path) => {
       headers
     );
 
-    res.status(result.status || 200).json(result);
+    res.status(result?.status || 200).json(result?.data || result);
   } catch (error) {
     logger.error(`Error routing to ${serviceName}: ${error.message}`);
     res.status(error.response?.status || 500).json({

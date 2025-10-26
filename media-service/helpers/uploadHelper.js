@@ -58,7 +58,7 @@ const __validate_file = (file) => {
 };
 
 export const uploadHelperFunction = async (req, res) => {
-    try {   
+    try {
         if (!__validate_file(req.file)) {
             return res.status(400).json({
                 success: false,
