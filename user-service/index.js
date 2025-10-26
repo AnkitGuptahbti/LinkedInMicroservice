@@ -140,7 +140,7 @@ app.get('/connections/:userId', async (req, res) => {
   }
 });
 
-app.get('/health', (req, res) => res.json({ status: 'healthy' }));
+app.get('/health', (req, res) => res.json({ status: 200, message: 'healthy' }));
 
 const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
