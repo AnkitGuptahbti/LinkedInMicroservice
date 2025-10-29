@@ -11,14 +11,21 @@ const winston = require('winston');
 const app = express();
 app.use(express.json());
 
+const setUserInfo = (req, res, next) => {
+    req.user = {
+      userId: req.headers['x-user-id'],
+      email: req.headers['x-user-email']
+    };
+  next();
+};
+
+app.use(setUserInfo)
+
 const logger = winston.createLogger({
   transports: [new winston.transports.Console()]
 });
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
+mongoose.connect(process.env.MONGO_URI);
 
 // Kafka Setup
 const kafka = new Kafka({
@@ -84,7 +91,7 @@ app.post('/', async (req, res) => {
 
 
 // Health route first
-app.get('/health', (req, res) => res.json({ status: 'healthy' }));
+app.get('/health', (req, res) => res.json({ status: 200, message: 'healthy post service' }));
 
 
 // Get Post
