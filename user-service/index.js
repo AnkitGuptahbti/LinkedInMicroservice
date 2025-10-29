@@ -6,10 +6,20 @@ import 'dotenv/config';
 import express from 'express';
 import winston from 'winston';
 import Profile from './models/Profiles.js';
-
+import { setUserInfo } from './middlewares/setUserInfo.js';
 const app = express();
 app.use(express.json());
 
+app.use(async (req, res, next) => {
+  const userId = req.headers['x-user-id'];
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  req.user = { userId };
+  next();
+});
+
+app.use(setUserInfo);
 const logger = winston.createLogger({
   transports: [new winston.transports.Console()]
 });
@@ -17,7 +27,12 @@ const logger = winston.createLogger({
 // Create/Update Profile
 app.post('/profile', async (req, res) => {
   try {
-    const { userId, ...profileData } = req.body;
+    const profileData = req.body;
+    const userId = req.user.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
 
     const profile = await Profile.findOneAndUpdate(
       { userId },

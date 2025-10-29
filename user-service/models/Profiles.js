@@ -8,6 +8,7 @@ const profileSchema = new mongoose.Schema({
     userId: { type: String, required: true, unique: true },
     firstName: String,
     lastName: String,
+    profilePicture: String,
     headline: String,
     location: String,
     industry: String,
