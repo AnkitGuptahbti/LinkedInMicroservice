@@ -13,26 +13,11 @@ const profileSchema = new mongoose.Schema({
     location: String,
     industry: String,
     summary: String,
-    experience: [{
-      title: String,
-      company: String,
-      startDate: Date,
-      endDate: Date,
-      description: String
-    }],
-    education: [{
-      school: String,
-      degree: String,
-      field: String,
-      startDate: Date,
-      endDate: Date
-    }],
     skills: [String],
     followers: [String],
     following: [String],
     connections: [String],
-    createdAt: { type: Date, default: Date.now }
-  });
+}, { timestamps: true });
   
   const Profile = mongoose.model('Profile', profileSchema);
 
