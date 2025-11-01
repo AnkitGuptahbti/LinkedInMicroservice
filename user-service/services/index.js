@@ -54,19 +54,10 @@ service.createExperience = async (experienceData, userId) => {
     }
 };
 
-service.getUserList = async () => {
+service.getUserList = async (userId) => {
     try {
-        const users = await Profile.find()
-        const formattedUsers = users.map(user => ({
-            userId: user.userId,
-            firstName: user.firstName || '',
-            lastName: user.lastName || '',
-            headline: user.headline || '',
-            location: user.location || '',
-            industry: user.industry || '',
-            summary: user.summary || ''
-        }));
-        return { status: 200, data: formattedUsers };
+        const users = await Profile.find( { _id: { $ne: userId } } ).select('userId firstName lastName headline location industry profilePicture');
+        return { status: 200, data: users };
     } catch (error) {
         logger.error(`Error getting user list: ${error.message}`);
         return { status: 500, error: error.message };
@@ -141,6 +132,32 @@ service.unfollowUser = async (userId, targetUserId) => {
         return { status: 200, data: { message: 'Unfollowed successfully' } };
     } catch (error) {
         logger.error(`Error unfollowing user: ${error.message}`);
+        return { status: 500, error: error.message };
+    }
+};
+
+service.getFollowers = async (userId) => {
+    try {
+        const profile = await Profile.findOne({ userId: userId }).select('followers');
+        if (!profile) {
+            return { status: 404, error: 'Profile not found' };
+        }
+        return { status: 200, data: profile.followers };
+    } catch (error) {
+        logger.error(`Error getting followers: ${error.message}`);
+        return { status: 500, error: error.message };
+    }
+};
+
+service.getFollowing = async (userId) => {
+    try {
+        const profile = await Profile.findOne({ userId: userId }).select('following');
+        if (!profile) {
+            return { status: 404, error: 'Profile not found' };
+        }
+        return { status: 200, data: profile.following };
+    } catch (error) {
+        logger.error(`Error getting following: ${error.message}`);
         return { status: 500, error: error.message };
     }
 };
