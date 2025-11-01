@@ -78,7 +78,7 @@ const handleUserFollowed = async (data) => {
   logger.info(`Feed cache invalidated for user: ${userId}`);
 };
 
-app.get('/health', (req, res) => res.json({ status: 'healthy' }));
+app.get('/health', (req, res) => res.json({ status: 200, message: 'healthy' }));
 
 // Get User Feed
 app.get('/:userId', async (req, res) => {
@@ -118,13 +118,13 @@ app.get('/:userId', async (req, res) => {
   } catch (error) {
     // logger.error(`Feed error: ${error.message}`);
     logger.error('Feed error', {
-  message: error.message,
-  url: error.config?.url,
-  method: error.config?.method,
-  responseStatus: error.response?.status,
-  responseData: error.response?.data,
-  stack: error.stack
-});
+      message: error.message,
+      url: error.config?.url,
+      method: error.config?.method,
+      responseStatus: error.response?.status,
+      responseData: error.response?.data,
+      stack: error.stack
+    });
     res.status(500).json({ error: error.message });
   }
 });
