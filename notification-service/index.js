@@ -144,7 +144,7 @@ const handleNotificationEvent = async (topic, data) => {
 };
 
 //health check
-app.get('/health', (req, res) => res.json({ status: 'healthy' }));
+app.get('/health', (req, res) => res.status(200).json({ status: 200, message: 'healthy' }));
 
 // Get user notifications
 app.get('/:userId', async (req, res) => {
