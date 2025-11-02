@@ -19,6 +19,8 @@ router.post('/unfollow/:targetUserId', controller.unfollowUser);
 router.get('/followers/:userId', controller.getFollowers);
 router.get('/following/:userId', controller.getFollowing);
 
+router.get('/following-profile', controller.getFollowingProfile);
+
 router.get('/connections', controller.getConnections);
 
 export default router;

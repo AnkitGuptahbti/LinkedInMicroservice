@@ -117,6 +117,23 @@ controller.getFollowing = async (req, res) => {
   }
 };
 
+controller.getFollowingProfile = async (req, res) => {
+  try {
+    const userId = req?.user?.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthenticated' });
+    }
+    const response = await service.getFollowingProfile(userId, page, limit);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.log("----------ERROR WHILE GETTING FOLLOWING PROFILE----------", error);
+    res.status(response.status).json({ error: response.error });
+  }
+};
+
 controller.getConnections = async (req, res) => {
   try {
     const userId = req.user.userId;

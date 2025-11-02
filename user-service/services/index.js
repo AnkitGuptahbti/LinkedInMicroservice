@@ -162,6 +162,28 @@ service.getFollowing = async (userId) => {
     }
 };
 
+service.getFollowingProfile = async (userId, page, limit) => {
+    try {
+        const profile = await Profile.findOne({ userId: userId }).select('following');
+        if (!profile) {
+            return { status: 404, error: 'Profile not found' };
+        }
+
+        const following = profile.following.filter(id => id !== userId);
+        const followingProfiles = await Profile.find({ userId: { $in: following } }).skip((page - 1) * limit).limit(limit);
+        return { 
+            status: 200, 
+            data: { 
+                followingProfiles, 
+                pagination: { total: following.length, page, limit } 
+            } 
+        };
+    } catch (error) {
+        logger.error(`Error getting following profile: ${error.message}`);
+        return { status: 500, error: error.error };
+    }
+};
+
 // Get Connections
 service.getConnections = async (userId) => {
     try {
