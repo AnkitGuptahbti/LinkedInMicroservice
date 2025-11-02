@@ -95,8 +95,8 @@ app.get('/:userId', async (req, res) => {
     }
 
     // Build feed from database
-    const response = await axios.get(`${process.env.USER_SERVICE_URL}/profile/${req.params.userId}`);
-    const following = response.data.following || [];
+    const response = await axios.get(`${process.env.USER_SERVICE_URL}/following/${req.params.userId}`);
+    const following = response.data || [];
 
     const posts = [];
     for (const userId of following.slice(0, 10)) {

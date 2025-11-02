@@ -40,7 +40,8 @@ controller.createExperience = async (req, res) => {
 
 controller.getUserList = async (req, res) => {
   try {
-    const response = await service.getUserList();
+    const userId = req.user.userId;
+    const response = await service.getUserList(userId);
     res.status(response.status).json(response.data);
   } catch (error) {
     console.log("----------ERROR WHILE GETTING USER LIST----------", error);
@@ -73,7 +74,7 @@ controller.getSpecificUserProfile = async (req, res) => {
 controller.followUser = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const targetUserId = req.params.userId;
+    const targetUserId = req.params.targetUserId;
     const response = await service.followUser(userId, targetUserId);
     res.status(response.status).json(response.data);
   } catch (error) {
@@ -85,11 +86,50 @@ controller.followUser = async (req, res) => {
 controller.unfollowUser = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const targetUserId = req.params.userId;
+    const targetUserId = req.params.targetUserId;
     const response = await service.unfollowUser(userId, targetUserId);
     res.status(response.status).json(response.data);
   } catch (error) {
     console.log("----------ERROR WHILE UNFOLLOWING USER----------", error);
+    res.status(response.status).json({ error: response.error });
+  }
+};
+
+controller.getFollowers = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const response = await service.getFollowers(userId);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.log("----------ERROR WHILE GETTING FOLLOWERS----------", error);
+    res.status(response.status).json({ error: response.error });
+  }
+};
+
+controller.getFollowing = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const response = await service.getFollowing(userId);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.log("----------ERROR WHILE GETTING FOLLOWING----------", error);
+    res.status(response.status).json({ error: response.error });
+  }
+};
+
+controller.getFollowingProfile = async (req, res) => {
+  try {
+    const userId = req?.user?.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthenticated' });
+    }
+    const response = await service.getFollowingProfile(userId, page, limit);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    console.log("----------ERROR WHILE GETTING FOLLOWING PROFILE----------", error);
     res.status(response.status).json({ error: response.error });
   }
 };
