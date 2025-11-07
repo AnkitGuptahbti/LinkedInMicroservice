@@ -1,9 +1,13 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const { Server } = require('socket.io');
-const http = require('http');
-const winston = require('winston');
+import 'dotenv/config';
+import express from 'express';
+import mongoose from 'mongoose';
+import { Server } from 'socket.io';
+import http from 'http';
+import winston from 'winston';
+import routes from './routes/route.js';
+import Message from './models/Message.model.js';
+import Conversation from './models/Conversation.model.js';
+import { setUserInfo } from './middleware/auth.middleware.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -17,33 +21,7 @@ const logger = winston.createLogger({
   transports: [new winston.transports.Console()]
 });
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
-
-// Message Schema
-const messageSchema = new mongoose.Schema({
-  senderId: { type: String, required: true },
-  receiverId: { type: String, required: true },
-  content: { type: String, required: true },
-  read: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
-});
-
-messageSchema.index({ senderId: 1, receiverId: 1 });
-
-const Message = mongoose.model('Message', messageSchema);
-
-// Conversation Schema
-const conversationSchema = new mongoose.Schema({
-  participants: [String],
-  lastMessage: String,
-  lastMessageAt: Date,
-  createdAt: { type: Date, default: Date.now }
-});
-
-const Conversation = mongoose.model('Conversation', conversationSchema);
+mongoose.connect(process.env.MONGO_URI);
 
 // Store online users
 const onlineUsers = new Map();
@@ -116,37 +94,10 @@ io.on('connection', (socket) => {
   });
 });
 
-// REST API
-app.get('/messages/:userId/:otherUserId', async (req, res) => {
-  try {
-    const { userId, otherUserId } = req.params;
-    
-    const messages = await Message.find({
-      $or: [
-        { senderId: userId, receiverId: otherUserId },
-        { senderId: otherUserId, receiverId: userId }
-      ]
-    }).sort({ createdAt: 1 }).limit(100);
+app.use(setUserInfo);
+app.use('/', routes);
 
-    res.json(messages);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get('/conversations/:userId', async (req, res) => {
-  try {
-    const conversations = await Conversation.find({
-      participants: req.params.userId
-    }).sort({ lastMessageAt: -1 });
-
-    res.json(conversations);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get('/health', (req, res) => res.json({ status: 'healthy' }));
+app.get('/health', (req, res) => res.json({ status: 200, message: "Chat Service is healthy" }));
 
 const PORT = process.env.PORT || 3006;
 server.listen(PORT, () => {
